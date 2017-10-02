@@ -1,0 +1,40 @@
+[Defines]
+  INF_VERSION               = 0x00010006
+  BASE_NAME                 = LSRecursive
+  FILE_GUID                 = 1BA79308-B149-42D9-8053-96ECED57B779
+  MODULE_TYPE               = UEFI_APPLICATION
+  VERSION_STRING            = 0.1
+  ENTRY_POINT               = UefiMain
+  
+  
+[Sources]
+  LSRecursive.c
+  
+  
+[Packages]
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+  ThalissonPkg/ThalissonPkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiBootServicesTableLib
+  BaseLib
+  DebugLib
+  UefiLib
+  MemoryAllocationLib
+  BaseMemoryLib
+  
+ 
+[Protocols]
+  gEfiSimpleFileSystemProtocolGuid
+   
+   
+[Guids]
+  gEfiFileInfoGuid
+  gEfiFileSystemInfoGuid
+  gEfiFileSystemVolumeLabelInfoIdGuid
+  
+
