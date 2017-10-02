@@ -80,3 +80,4 @@
   ThalissonPkg/Applications/ListDirectory/ListDirectory.inf
   ThalissonPkg/Applications/LSRecursive/LSRecursive.inf
   ThalissonPkg/Applications/FileDeletion/FileDeletion.inf
+  ThalissonPkg/Applications/FileExistence/FileExistence.inf
