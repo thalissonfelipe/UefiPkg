@@ -21,7 +21,7 @@ if [[ -f serial_output.txt ]]; then
     rm -f serial_output.txt
 fi
 
-#source cp_images.sh
+source cp_images.sh
 
 qemu-system-x86_64  $MACHINE $FIRMWARE $VIRTUAL_HDD  $SERIAL_OUTPUT \
     $USB_VOLUME "${@:2}"

@@ -1,1 +1,3 @@
 QEMU/harddisk/
+QEMU/OVMF.fd
+QEMU/serial_output.txt
