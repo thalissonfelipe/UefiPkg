@@ -1,0 +1,41 @@
+[Defines]
+  INF_VERSION               = 0x00010006
+  BASE_NAME                 = FileExistence
+  FILE_GUID                 = 6AF8E6CE-2ED0-47BD-B079-D212B96FB718
+  MODULE_TYPE               = UEFI_APPLICATION
+  VERSION_STRING            = 0.1
+  ENTRY_POINT               = UefiMain
+  
+  
+[Sources]
+  FileExistence.c
+  
+  
+[Packages]
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+  ThalissonPkg/ThalissonPkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiBootServicesTableLib
+  BaseLib
+  DebugLib
+  UefiLib
+  MemoryAllocationLib
+  BaseMemoryLib
+  
+ 
+[Protocols]
+  gEfiSimpleFileSystemProtocolGuid
+   
+   
+[Guids]
+  gEfiFileInfoGuid
+  gEfiFileSystemInfoGuid
+  gEfiFileSystemVolumeLabelInfoIdGuid
+  
+
+
