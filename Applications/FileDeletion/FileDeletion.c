@@ -91,6 +91,11 @@ UefiMain (
 			}
 		}
 
+		if (Count == 0) {
+			Print(L"Sistema de arquivos não encontrados.\n");
+			goto end_for;
+		}
+
 		Status = RootDir->Open(
 				RootDir,
 				&File,
@@ -168,6 +173,9 @@ UefiMain (
 			}
 			Count++;
 		}
+
+		FreePool(Buffer);
+		FreePool(FileInfo);
 
 		end_for:
 			continue;
