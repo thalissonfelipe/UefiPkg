@@ -10,7 +10,9 @@ EFI_STATUS
 LSRecursive(
 	EFI_FILE_PROTOCOL *RootDir,
 	CHAR16			  *Buffer,
-	CHAR16			  *Path
+	CHAR16			  *FileName,
+	CHAR16  		  *Path,
+	UINTN 			  *Flag
 )
 {
 	EFI_STATUS Status;
@@ -46,16 +48,15 @@ LSRecursive(
 				CHAR16 *Dir = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
 				StrCpy(Dir, Path);
 				StrCat(Path, FileInfo->FileName);
-				Print(L"%s\n", Path);
 				StrCat(Path, L"/");
-				LSRecursive(File, FileInfo->FileName, Path);
+				LSRecursive(File, FileInfo->FileName, FileName, Path, Flag);
 				StrCpy(Path, Dir);
 			}
 		}
-		else {
+		if (StrCmp(FileInfo->FileName, FileName) == 0) {
 			Print(L"%s%s\n", Path, FileInfo->FileName);
+			*Flag = 1;
 		}
-
 	}
 
 	FreePool(FileInfo);
@@ -66,7 +67,6 @@ close_file:
 close_root:
 	RootDir->Close(RootDir);
 
-	Print(L"Status: %r\n", Status);
 	return Status;
 }
 
@@ -117,18 +117,22 @@ UefiMain (
         goto close_fs;
     }
 
-    CHAR16 *Path = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
-    LSRecursive(RootDir, L".", Path);
+    CHAR16* Path = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
+    UINTN *Flag;
+    LSRecursive(RootDir, L".", L"Thalisson.tx", Path, Flag);
+    if (*Flag != 1) {
+    	Print(L"Não foi encontrado nenhum arquivo.\n");
+    }
 
     FreePool(Path);
 
 close_fs:
     gBS->CloseProtocol(
-        NtfsHandle,
+    	NtfsHandle,
         &gEfiSimpleFileSystemProtocolGuid,
         ImageHandle,
         NULL);
 
 bottom:
-    return Status;
+	return Status;
 }

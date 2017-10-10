@@ -1,0 +1,39 @@
+[Defines]
+  INF_VERSION               = 0x00010006
+  BASE_NAME                 = FindRecursive
+  FILE_GUID                 = 302DF611-9E2B-4CE6-8AC0-8582CE1458CA
+  MODULE_TYPE               = UEFI_APPLICATION
+  VERSION_STRING            = 0.1
+  ENTRY_POINT               = UefiMain
+  
+  
+[Sources]
+  FindRecursive.c
+  
+  
+[Packages]
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+  ThalissonPkg/ThalissonPkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiBootServicesTableLib
+  BaseLib
+  DebugLib
+  UefiLib
+  MemoryAllocationLib
+  BaseMemoryLib
+  
+ 
+[Protocols]
+  gEfiSimpleFileSystemProtocolGuid
+   
+   
+[Guids]
+  gEfiFileInfoGuid
+  gEfiFileSystemInfoGuid
+  gEfiFileSystemVolumeLabelInfoIdGuid
+  
