@@ -18,7 +18,7 @@ UefiMain (
     UINTN BufferSize = SIZE_OF_EFI_FILE_INFO + 512 * sizeof(CHAR16);
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem = NULL;
     EFI_FILE_INFO *FileInfo = NULL;
-    FileInfo = AllocateZeroPool(BufferSize);
+    FileInfo = (EFI_FILE_INFO*)AllocateZeroPool(BufferSize);
     EFI_FILE_PROTOCOL *RootDir = NULL;
     EFI_FILE_PROTOCOL *File = NULL;
 
@@ -79,6 +79,8 @@ UefiMain (
 		}
 		Print(L"File: %s\n", FileInfo->FileName);
     }
+
+    FreePool(FileInfo);
 
 
 close_file:

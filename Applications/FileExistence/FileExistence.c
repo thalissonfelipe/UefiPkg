@@ -46,10 +46,13 @@ LSRecursive(
 		}
 		if (FileInfo->Attribute == EFI_FILE_DIRECTORY) {
 			if (StrCmp(FileInfo->FileName, L".") != 0 && StrCmp(FileInfo->FileName, L"..") != 0) {
+				if (*Check == 1) return Status;
 				LSRecursive(File, FileInfo->FileName, Arquivo, Check);
 			}
 		}
 	}
+
+	FreePool(FileInfo);
 
 close_file:
 	File->Close(File);
@@ -74,7 +77,7 @@ UefiMain (
     UINTN *Check;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem = NULL;
     EFI_FILE_PROTOCOL *RootDir = NULL;
-    CHAR16 *Arquivo = L"Sousa.txt";
+    CHAR16 *Arquivo = L"Felipe.txt";
 
     Status = gBS->LocateHandleBuffer(
         ByProtocol,
@@ -88,7 +91,7 @@ UefiMain (
     }
 
     Print(L"%d handle(s) encontrado(s)\n", NoHandles);
-    Print(L"Procurando por %s ...\n", Arquivo);
+    Print(L"Procurando por %s\n", Arquivo);
 
     for (i = 0; i < NoHandles; i++) {
 		Status = gBS->OpenProtocol(

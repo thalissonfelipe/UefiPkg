@@ -22,6 +22,7 @@ LSRecursive(
 	EFI_FILE_INFO *FileInfo = NULL;
 	UINTN BufferSize = SIZE_OF_EFI_FILE_INFO + 512 * sizeof(CHAR16);
 	FileInfo = (EFI_FILE_INFO*)AllocateZeroPool(BufferSize);
+	CHAR16 *Dir = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
 
 	Status = RootDir->Open(
 			RootDir,
@@ -47,8 +48,6 @@ LSRecursive(
 		}
 		if (FileInfo->Attribute == EFI_FILE_DIRECTORY) {
 			if (StrCmp(FileInfo->FileName, L".") != 0 && StrCmp(FileInfo->FileName, L"..") != 0) {
-				CHAR16 *Dir = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
-				Dir[0] = '\0';
 				StrCpy(Dir, Path);
 				StrCat(Path, FileInfo->FileName);
 				StrCat(Path, L"\\");
@@ -65,6 +64,7 @@ LSRecursive(
 	}
 
 	FreePool(FileInfo);
+	FreePool(Dir);
 
 close_file:
 	File->Close(File);
@@ -88,7 +88,7 @@ ReadInput (
 
 	Print(L"Tecle ESC para finalizar a entrada.\n");
 
-	while (Key.ScanCode != SCAN_ESC) {
+	while (Key.UnicodeChar != SCAN_F3) {
 		Status = gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &EventIndex);
 		if (EFI_ERROR(Status)) {
 			Print(L"Error: %r\n", Status);
@@ -102,7 +102,7 @@ ReadInput (
 		}
 
 		Buffer[i] = Key.UnicodeChar;
-		Print(L"%s\n", Buffer);
+		Print(L"%c", Key.UnicodeChar);
 		i++;
 	}
 
@@ -126,7 +126,6 @@ UefiMain(
 	EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem = NULL;
 	EFI_FILE_PROTOCOL *RootDir = NULL;
 	EFI_DEVICE_PATH_PROTOCOL *DevicePath = NULL;
-	EFI_LOADED_IMAGE_PROTOCOL *Image = NULL;
 	CHAR16 *FileName = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
 	CHAR16 *FilePath = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
 	FilePath[0] = '\0';
@@ -171,7 +170,7 @@ UefiMain(
 	EFI_STATUS Flag;
 	LSRecursive(RootDir, L".", FileName, FilePath, Flag);
 	if (StrCmp(FilePath, L"") == 0) {
-		Print(L"Arquivo não encontrado!\n");
+		Print(L"Arquivo não encontrado.\n");
 		goto close_fs;
 	}
 	Print(L"Path: %s\n", FilePath);
@@ -187,27 +186,15 @@ UefiMain(
 			&ImageApplication);
 	if (EFI_ERROR(Status)) {
 		Print(L"Could not load image: %r\n", Status);
-		return Status;
+		goto close_fs;
 	}
 	Print(L"Imagem carregada.\n");
-
-	Status = gBS->OpenProtocol(
-			ImageApplication,
-			&gEfiLoadedImageProtocolGuid,
-			(VOID**) &Image,
-			ImageHandle,
-			(VOID*) NULL,
-			EFI_OPEN_PROTOCOL_GET_PROTOCOL);
-	if (EFI_ERROR(Status)) {
-		Print(L"Could not open image: %r\n", Status);
-		return Status;
-	}
 
 	Print(L"Startando a imagem...\n");
 	Status = gBS->StartImage(ImageApplication, (UINTN*) NULL, (CHAR16**) NULL);
 	if (EFI_ERROR(Status)) {
 		Print(L"Could not start image: %r\n", Status);
-		return Status;
+		goto close_fs;
 	}
 
 	FreePool(FileName);

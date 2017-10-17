@@ -18,6 +18,7 @@ LSRecursive(
 	EFI_FILE_INFO *FileInfo = NULL;
 	UINTN BufferSize = SIZE_OF_EFI_FILE_INFO + 512 * sizeof(CHAR16);
 	FileInfo = (EFI_FILE_INFO*)AllocateZeroPool(BufferSize);
+	CHAR16 *Dir = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
 
 	Status = RootDir->Open(
 			RootDir,
@@ -43,7 +44,6 @@ LSRecursive(
 		}
 		if (FileInfo->Attribute == EFI_FILE_DIRECTORY) {
 			if (StrCmp(FileInfo->FileName, L".") != 0 && StrCmp(FileInfo->FileName, L"..") != 0) {
-				CHAR16 *Dir = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
 				StrCpy(Dir, Path);
 				StrCat(Path, FileInfo->FileName);
 				Print(L"%s\n", Path);
@@ -59,6 +59,7 @@ LSRecursive(
 	}
 
 	FreePool(FileInfo);
+	FreePool(Dir);
 
 close_file:
 	File->Close(File);

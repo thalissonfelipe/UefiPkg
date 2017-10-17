@@ -20,7 +20,7 @@ UefiMain (
     UINTN BufferSize = SIZE_OF_EFI_FILE_INFO + 512 * sizeof(CHAR16);
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem = NULL;
     EFI_FILE_INFO *FileInfo = NULL;
-    FileInfo = AllocateZeroPool(BufferSize);
+    FileInfo = (EFI_FILE_INFO*)AllocateZeroPool(BufferSize);
     EFI_FILE_PROTOCOL *RootDir = NULL;
     EFI_FILE_PROTOCOL *File = NULL;
     EFI_FILE_PROTOCOL *FileAux = NULL;
@@ -85,15 +85,8 @@ UefiMain (
 			if (StrCmp(FileInfo->FileName, L"file_deletion.conf") == 0)
 				Count++;
 			if (Count == 2) {
-				Print(L"Tudo certo!\n");
-				i = NoHandles;
 				break;
 			}
-		}
-
-		if (Count == 0) {
-			Print(L"Sistema de arquivos não encontrados.\n");
-			goto end_for;
 		}
 
 		Status = RootDir->Open(
@@ -168,19 +161,26 @@ UefiMain (
 					Print(L"Could not delete file: %r\n", Status);
 					goto close_file;
 				}
-				Print(L"Arquivo (%s) deletado com sucesso!\n", Buffer);
-				Buffer = AllocateZeroPool(512 * sizeof(CHAR16));
+				Print(L"Arquivo %s deletado com sucesso!\n", Buffer);
+				Buffer[0] = '\0';
 			}
 			Count++;
 		}
 
 		FreePool(Buffer);
+		FreePool(BufferAux);
 		FreePool(FileInfo);
+
+		goto close_file;
 
 		end_for:
 			continue;
 
     }
+
+    Print(L"Sistema de arquivos não encontrado.\n");
+
+
 
 close_file:
     File->Close(File);
