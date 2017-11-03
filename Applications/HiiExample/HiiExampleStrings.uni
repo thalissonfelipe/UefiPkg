@@ -1,0 +1,37 @@
+/=#
+
+#langdef en-US "English" 
+#langdef fr-FR "Francais"
+
+#string STR_HIIEXAMPLE_FORM_SET_TITLE			#language en-US "HII Example"
+												#language fr-FR "Hii Example"
+#string STR_HIIEXAMPLE_FORM_SET_HELP			#language en-US "This is a basic HII programming test"
+												#language fr-FR "This is a basic HII programming test"
+#string STR_FORM_TITLE1							#language en-US "Form 1"		
+												#language fr-FR "Form 1"
+#string STR_MY_SUBTITLE							#language en-US "Hello World!"		
+												#language fr-FR "Hello World!"	
+#string STR_HIIEXAMPLE_NULL                  	#language en-US ""																										
+												#language fr-FR ""
+#string STR_STANDARD_DEFAULT_PROMPT		   		#language en-US "Reset to Standard Default."
+												#language fr-FR "Reset to Standard Default."
+#string STR_STANDARD_DEFAULT_HELP		  		#language en-US "This will reset all the Questions to their standard default value."	
+												#language fr-FR "This will reset all the Questions to their standard default value."	
+#string STR_GOTO_PROMPT							#language en-US "Form 2"
+												#language fr-FR "Form 2"
+#string STR_GOTO_HELP							#language en-US "Redireciona para o form 2"
+												#language fr-FR "Redireciona para o form 2"	
+#string STR_ONE_OF_PROMPT				   #language en-US  "My one-of prompt"
+
+#string STR_ONE_OF_HELP					   #language en-US  "My one-of help is going to be a long string to test out the efficiency of the ability of the I am tired of typing capabilities."
+
+#string STR_ONE_OF_TEXT1				   #language en-US  "Text 1"
+
+#string STR_ONE_OF_TEXT2				   #language en-US  "Text 2"
+
+#string STR_ONE_OF_TEXT3				   #language en-US  "Text 3"
+
+#string STR_CHECK_BOX_PROMPT			   #language en-US  "Checkbox"
+
+#string STR_CHECK_BOX_HELP				   #language en-US  "This is the help message for the activation of check boxes. This is not to be confused with activating Czech boxes, since one can never tell what the ramifications are of activating foreign controlled boxes are."
+																			

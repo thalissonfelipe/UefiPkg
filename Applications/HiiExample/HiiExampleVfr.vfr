@@ -1,0 +1,58 @@
+#include "HiiExampleData.h"
+#include "HiiExampleStruct.h"
+
+formset
+  guid      = HII_EXAMPLE_GUID,
+  title     = STRING_TOKEN(STR_HIIEXAMPLE_FORM_SET_TITLE),
+  help      = STRING_TOKEN(STR_HIIEXAMPLE_FORM_SET_HELP),
+  classguid = EFI_HII_PLATFORM_SETUP_FORMSET_GUID,
+  
+  varstore HII_EXAMPLE,     
+    name  = MyData,                  
+	guid =  HII_EXAMPLE_GUID;	
+	
+  defaultstore MyStandardDefault,
+    prompt      = STRING_TOKEN(STR_STANDARD_DEFAULT_PROMPT),
+	attribute 	= 0x0000;		    
+  
+  form formid = 1,
+    title = STRING_TOKEN(STR_FORM_TITLE1);
+    
+    subtitle text = STRING_TOKEN(STR_MY_SUBTITLE);
+    
+    resetbutton
+      defaultstore = MyStandardDefault,
+      prompt	   = STRING_TOKEN(STR_STANDARD_DEFAULT_PROMPT),
+      help         = STRING_TOKEN(STR_STANDARD_DEFAULT_HELP),
+	endresetbutton;
+
+	goto 2,
+		prompt = STRING_TOKEN(STR_GOTO_PROMPT),
+		help   = STRING_TOKEN(STR_GOTO_HELP);
+	
+	text 
+	  help  = STRING_TOKEN(STR_MY_SUBTITLE),
+      text  = STRING_TOKEN(STR_MY_SUBTITLE);
+      
+    checkbox
+      varid   = MyData.Field01,
+ 	  prompt  = STRING_TOKEN(STR_CHECK_BOX_PROMPT),
+  	  help    = STRING_TOKEN(STR_CHECK_BOX_HELP),
+  	  flags   = CHECKBOX_DEFAULT | CHECKBOX_DEFAULT_MFG,
+  	  default = TRUE,
+	endcheckbox;
+	
+	oneof
+      name        = MyOneOf,
+      varid       = MyData.Field02,
+      prompt      = STRING_TOKEN(STR_ONE_OF_PROMPT),
+      help        = STRING_TOKEN(STR_ONE_OF_HELP),
+      option text = STRING_TOKEN(STR_ONE_OF_TEXT1), value = 0x0, flags = 0;
+      option text = STRING_TOKEN(STR_ONE_OF_TEXT2), value = 0x1, flags = 0;
+      option text = STRING_TOKEN(STR_ONE_OF_TEXT3), value = 0x2, flags = DEFAULT;
+	endoneof;
+	
+	
+  endform;
+  
+endformset;

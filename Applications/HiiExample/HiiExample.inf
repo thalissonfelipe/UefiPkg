@@ -1,0 +1,40 @@
+[Defines]
+  INF_VERSION                     = 0x00010005
+  BASE_NAME                       = HiiExample
+  FILE_GUID                       = BDE21062-E79D-4276-B90C-9F97F759B2CD
+  MODULE_TYPE                     = UEFI_APPLICATION
+  VERSION_STRING                  = 1.0
+  ENTRY_POINT                     = UefiMain
+
+[Sources]
+  HiiExample.c
+  HiiExample.h
+  HiiExampleData.h
+  HiiExampleVfr.vfr
+  HiiExampleStrings.uni
+  HiiExampleStruct.h
+  
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  ThalissonPkg/ThalissonPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  UefiLib
+  UefiApplicationEntryPoint
+  PrintLib
+  HiiLib
+  UefiHiiServicesLib
+
+[Guids]
+  gEfiIfrTianoGuid                              ## CONSUMES ## GUID (Extended IFR Guid Opcode)
+  gEfiHiiPlatformSetupFormsetGuid               ## CONSUMES ## GUID (Indicate the formset class guid to be displayed)
+  gEfiHiiDriverHealthFormsetGuid                ## CONSUMES ## GUID (Indicate the Driver Health formset class guid to be displayed)
+  
+[Protocols]
+  gEfiGraphicsOutputProtocolGuid                ## PROTOCOL SOMETIMES_CONSUMES
+  gEfiHiiStringProtocolGuid                     ## PROTOCOL CONSUMES
+  gEfiFormBrowser2ProtocolGuid                  ## PROTOCOL CONSUMES
+  gEfiHiiDatabaseProtocolGuid                   ## CONSUMES
+
