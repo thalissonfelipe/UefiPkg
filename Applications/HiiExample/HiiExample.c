@@ -14,8 +14,6 @@ UefiMain (
   EFI_HII_HANDLE                  HiiHandle;
   EFI_SCREEN_DESCRIPTOR           Screen;
   EFI_FORM_BROWSER2_PROTOCOL      *FormBrowser2 = NULL;
-  EFI_BROWSER_ACTION_REQUEST  Action;
-  Action = EFI_BROWSER_ACTION_REQUEST_SUBMIT;
 
   SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
 
@@ -43,7 +41,10 @@ UefiMain (
 		   &mFormSetGuid,
 		   1,
 		   &Screen,
-		   &Action);
+		   NULL);
+  if (EFI_ERROR(Status)) {
+	  return Status;
+  }
 
   HiiRemovePackages (HiiHandle);
 

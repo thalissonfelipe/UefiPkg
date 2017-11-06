@@ -21,8 +21,6 @@
 #include <Library/UefiLib.h>
 #include <Library/BaseLib.h>
 #include <Library/UefiBootServicesTableLib.h>
-#include <Library/DebugLib.h>
-#include <Library/PrintLib.h>
 
 
 extern UINT8  HiiExampleStrings[];

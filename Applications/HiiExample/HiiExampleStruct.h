@@ -4,7 +4,6 @@
 #include <Guid/HiiPlatformSetupFormset.h>
 #include <Guid/HiiFormMapMethodGuid.h>
 #include <Guid/DriverSampleHii.h>
-#include <Guid/ZeroGuid.h>
 
 #pragma pack(1)
 typedef struct {
