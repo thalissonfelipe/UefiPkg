@@ -1,0 +1,42 @@
+[Defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = SimpleDriver
+  FILE_GUID                      = 363F9DA1-0FFC-46C9-A645-9390462FED24
+  MODULE_TYPE                    = UEFI_DRIVER
+  VERSION_STRING                 = 0.1
+  ENTRY_POINT                    = SimpleDriverLoad
+  UNLOAD_IMAGE                   = SimpleDriverUnload
+
+#
+#  VALID_ARCHITECTURES           = IA32 X64 IPF
+#
+
+[Sources]
+  SimpleDriver.c
+  SimpleDriver.h
+  DriverBinding.c
+  DriverBinding.h
+  ComponentName.c
+  ComponentName.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  ThalissonPkg/ThalissonPkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  BaseLib
+  DebugLib
+  UefiLib
+  MemoryAllocationLib
+  BaseMemoryLib
+  DevicePathLib
+
+[Protocols]
+  gEfiDriverSupportedEfiVersionProtocolGuid
+  gEfiDriverBindingProtocolGuid
+  gEfiComponentNameProtocolGuid
+  gEfiComponentName2ProtocolGuid
+  
