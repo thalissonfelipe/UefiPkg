@@ -86,7 +86,7 @@ ReadInput (
 	EFI_INPUT_KEY Key;
 	CHAR16 *Buffer = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
 
-	Print(L"Tecle ESC para finalizar a entrada.\n");
+	Print(L"Aperte a tecla ENTER para finalizar a entrada.\n");
 
 	while (Key.UnicodeChar != SCAN_F3) {
 		Status = gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &EventIndex);
@@ -99,6 +99,12 @@ ReadInput (
 		if (EFI_ERROR(Status)) {
 			Print(L"Error: %r\n", Status);
 			return Status;
+		}
+
+		if (Key.UnicodeChar == CHAR_BACKSPACE) {
+			Print(L"%c", Key.UnicodeChar);
+			i--;
+			continue;
 		}
 
 		Buffer[i] = Key.UnicodeChar;
