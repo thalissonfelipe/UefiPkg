@@ -2,57 +2,157 @@
 #include "HiiExampleStruct.h"
 
 formset
-  guid      = HII_EXAMPLE_GUID,
-  title     = STRING_TOKEN(STR_HIIEXAMPLE_FORM_SET_TITLE),
-  help      = STRING_TOKEN(STR_HIIEXAMPLE_FORM_SET_HELP),
-  classguid = EFI_HII_PLATFORM_SETUP_FORMSET_GUID,
-  
-  varstore HII_EXAMPLE,     
-    name  = MyData,                  
-	guid =  HII_EXAMPLE_GUID;	
-	
+  guid  = HII_EXAMPLE_GUID,
+  title = STRING_TOKEN(STR_HIIEXAMPLE_FORM_SET_TITLE),
+  help  = STRING_TOKEN(STR_HIIEXAMPLE_FORM_SET_HELP),
+
+  varstore HII_EXAMPLE,
+    name  = MyData,
+	guid  = HII_EXAMPLE_GUID;
+
   defaultstore MyStandardDefault,
     prompt      = STRING_TOKEN(STR_STANDARD_DEFAULT_PROMPT),
-	attribute 	= 0x0000;		    
-  
+	attribute 	= 0x0000;
+
   form formid = 1,
     title = STRING_TOKEN(STR_FORM_TITLE1);
-    
+
     subtitle text = STRING_TOKEN(STR_MY_SUBTITLE);
-    
+
     resetbutton
       defaultstore = MyStandardDefault,
       prompt	   = STRING_TOKEN(STR_STANDARD_DEFAULT_PROMPT),
       help         = STRING_TOKEN(STR_STANDARD_DEFAULT_HELP),
 	endresetbutton;
 
-	goto 2,
-		prompt = STRING_TOKEN(STR_GOTO_PROMPT),
-		help   = STRING_TOKEN(STR_GOTO_HELP);
-	
-	text 
-	  help  = STRING_TOKEN(STR_MY_SUBTITLE),
+  	goto 2,
+  	  prompt = STRING_TOKEN(STR_GOTO_PROMPT1),
+  	  help   = STRING_TOKEN(STR_GOTO_HELP);
+
+  	text
+  	  help  = STRING_TOKEN(STR_MY_SUBTITLE),
       text  = STRING_TOKEN(STR_MY_SUBTITLE);
-      
+
     checkbox
-      varid   = MyData.Field01,
- 	  prompt  = STRING_TOKEN(STR_CHECK_BOX_PROMPT),
-  	  help    = STRING_TOKEN(STR_CHECK_BOX_HELP),
-  	  flags   = CHECKBOX_DEFAULT | CHECKBOX_DEFAULT_MFG,
-  	  default = TRUE,
-	endcheckbox;
+      varid   = MyData.Checkbox,
+   	  prompt  = STRING_TOKEN(STR_CHECK_BOX_PROMPT),
+      help    = STRING_TOKEN(STR_CHECK_BOX_HELP),
+      flags   = CHECKBOX_DEFAULT | CHECKBOX_DEFAULT_MFG,
+      default = TRUE,
+  	endcheckbox;
 	
-	oneof
+	grayoutif ideqval MyData.Checkbox == 0;
+	  subtitle text = STRING_TOKEN(STR_MY_SUBTITLE);
+	endif;
+	
+  	oneof
       name        = MyOneOf,
-      varid       = MyData.Field02,
+      varid       = MyData.OneOf,
       prompt      = STRING_TOKEN(STR_ONE_OF_PROMPT),
       help        = STRING_TOKEN(STR_ONE_OF_HELP),
       option text = STRING_TOKEN(STR_ONE_OF_TEXT1), value = 0x0, flags = 0;
       option text = STRING_TOKEN(STR_ONE_OF_TEXT2), value = 0x1, flags = 0;
       option text = STRING_TOKEN(STR_ONE_OF_TEXT3), value = 0x2, flags = DEFAULT;
-	endoneof;
-	
-	
+    endoneof;
+
+    orderedlist
+      varid   	  = MyData.OrderedList,
+      prompt      = STRING_TOKEN(STR_ORDERED_LIST_PROMPT),
+      help    	  = STRING_TOKEN(STR_ORDERED_LIST_HELP),
+      flags   	  = RESET_REQUIRED,
+      option text = STRING_TOKEN(STR_ONE_OF_TEXT1), value = 1, flags = 0;
+      option text = STRING_TOKEN(STR_ONE_OF_TEXT2), value = 2, flags = 0;
+      option text = STRING_TOKEN(STR_ONE_OF_TEXT3), value = 3, flags = 0;
+      default 	  = {1,2,3},
+    endlist;
+
+    string
+      varid   = MyData.String1,
+      prompt  = STRING_TOKEN(STR_MY_STRING_PROMPT1),
+      help    = STRING_TOKEN(STR_MY_STRING_HELP),
+      flags   = INTERACTIVE,
+      key     = 0x1236,
+      minsize = 6,
+      maxsize = 40,
+    endstring;
+    
+    string
+      varid   = MyData.String2,
+      prompt  = STRING_TOKEN(STR_MY_STRING_PROMPT2),
+      help    = STRING_TOKEN(STR_MY_STRING_HELP),
+      flags   = INTERACTIVE,
+      key     = 0x1237,
+      minsize = 6,
+      maxsize = 40,
+      inconsistentif prompt = STRING_TOKEN(STR_ERROU),
+        pushthis != stringref(STRING_TOKEN(STR_STRING))
+      endif 
+    endstring;
+
+    numeric
+      varid   = MyData.Numeric,
+      prompt  = STRING_TOKEN(STR_NUMERIC_PROMPT),
+      help	  = STRING_TOKEN(STR_NUMERIC_HELP),
+      flags   = INTERACTIVE,
+      minimum = 0,
+      maximum = 0xf0,
+      step	  = 1,
+      default = 0,
+    endnumeric;
+
+    date
+   	  name	 = MyDate,
+   	  prompt = STRING_TOKEN(STR_DATE_PROMPT),
+   	  help   = STRING_TOKEN(STR_DATE_HELP),
+   	  flags  = STORAGE_TIME,
+    enddate;
+
+    time
+   	  name   = MyTime,
+   	  prompt = STRING_TOKEN(STR_TIME_PROMPT),
+   	  help   = STRING_TOKEN(STR_TIME_HELP),
+   	  flags  = STORAGE_TIME,
+    endtime;
+    
   endform;
   
+  form formid = 2,
+    title = STRING_TOKEN(STR_FORM_TITLE2);
+    
+    subtitle text = STRING_TOKEN(STR_HIIEXAMPLE_NULL);
+    
+    goto 1,
+      prompt = STRING_TOKEN(STR_GOTO_PROMPT2),
+  	  help   = STRING_TOKEN(STR_GOTO_HELP);
+    
+    numeric
+      varid   = MyData.FavoriteNumber,
+      prompt  = STRING_TOKEN(STR_MY_FAVORITE_NUMBER),
+      help	  = STRING_TOKEN(STR_HIIEXAMPLE_NULL),
+      minimum = 0,
+      maximum = 255,
+      step	  = 1,
+      default = 0,
+      warningif prompt = STRING_TOKEN(STR_ACERTOU), timeout = 3,
+        ideqval MyData.FavoriteNumber == 7
+      endif
+      inconsistentif prompt = STRING_TOKEN(STR_ERROU),
+        NOT ideqval MyData.FavoriteNumber == 7
+      endif
+    endnumeric;
+    
+    suppressif ideqval MyData.FavoriteNumber == 7;
+   	  text
+   	    help = STRING_TOKEN(STR_HIIEXAMPLE_NULL),
+        text = STRING_TOKEN(STR_MAKE_ME_INVISIBLE);
+    endif;    
+    
+    grayoutif ideqval MyData.OneOf == 0x0;
+   	  text
+   	    help = STRING_TOKEN(STR_MAKE_ME_READ_ONLY_HELP),
+        text = STRING_TOKEN(STR_MAKE_ME_READ_ONLY);
+    endif;
+    
+  endform;
+
 endformset;

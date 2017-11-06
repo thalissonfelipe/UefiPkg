@@ -8,12 +8,13 @@
 
 #pragma pack(1)
 typedef struct {
-	UINT8 Field01;
-	UINT8 Field02;
-	UINT8 Field03;
-	UINT8 Field04;
-	UINT8 Field05;
-	UINT8 Field06;
+	UINT8 	Checkbox;
+	UINT8 	OneOf;
+	UINT8 	OrderedList[3];
+	UINT16  String1[40];
+	UINT16  String2[40];
+	UINT8 	FavoriteNumber;
+	UINT8 	Numeric;
 } HII_EXAMPLE;
 
 #pragma pack()
