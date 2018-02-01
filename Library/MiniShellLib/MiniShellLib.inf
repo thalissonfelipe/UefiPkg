@@ -1,0 +1,32 @@
+#
+# -*- C utf8 -*-
+#
+# Author:
+#	 Thalisson Sousa <thalisson.sousa@lsbd.ufc.br>
+#
+# For usage and distribution conditions contact Lenovo directly.
+#
+
+[Defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = MiniShellLib
+  FILE_GUID                      = C3D06D1F-98AA-4872-89F3-69D1822362B8
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = MiniShellLib
+
+[Sources]
+    MiniShellLib.c
+
+[Packages]
+    MdePkg/MdePkg.dec
+    ThalissonPkg/ThalissonPkg.dec
+
+[LibraryClasses]
+    UefiLib
+
+[Protocols]
+    gEfiShellParametersProtocolGuid
+
+[Guids]
+    
