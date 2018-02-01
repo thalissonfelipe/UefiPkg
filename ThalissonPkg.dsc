@@ -74,10 +74,18 @@
   SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
   ShellLib|ShellPkg/Library/UefiShellLib/UefiShellLib.inf
   CacheMaintenanceLib|MdePkg/Library/BaseCacheMaintenanceLib/BaseCacheMaintenanceLib.inf
-  
+  FileSystemLib|ThalissonPkg/Library/FileSystemLib/FileSystemLib.inf
+  MiniShellLib|ThalissonPkg/Library/MiniShellLib/MiniShellLib.inf
+
 [Components]
-#### Applications.
   ThalissonPkg/Applications/ListDirectory/ListDirectory.inf
   ThalissonPkg/Applications/LSRecursive/LSRecursive.inf
   ThalissonPkg/Applications/FileDeletion/FileDeletion.inf
   ThalissonPkg/Applications/FileExistence/FileExistence.inf
+  ThalissonPkg/Applications/LoadImage/LoadImage.inf
+  ThalissonPkg/Applications/LastModifiedFile/LastModifiedFile.inf
+  ThalissonPkg/Applications/HiiExample/HiiExample.inf
+  ThalissonPkg/Applications/FindRecursive/FindRecursive.inf
+  ThalissonPkg/Drivers/SimpleDriver/SimpleDriver.inf
+  ThalissonPkg/Library/FileSystemLib/FileSystemLib.inf
+  ThalissonPkg/Library/MiniShellLib/MiniShellLib.inf

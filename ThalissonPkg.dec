@@ -4,9 +4,13 @@
   PACKAGE_GUID                  = 4FAA0758-44A9-49AD-9069-6ED71CF37C64
   PACKAGE_VERSION               = 0.01
   
-
 [Includes]
-
-
+  Include
+  Include/FileSystemLib/
+  Include/MiniShellLib/
+  
 [Guids]
+  gSimpleDriverGuid = { 0xED1F471F, 0x750E, 0x4A38, { 0x8D, 0x4D, 0xCA, 0x91, 0xE5, 0xFE, 0x4B, 0x4A } }
 
+[Protocols]
+ 
