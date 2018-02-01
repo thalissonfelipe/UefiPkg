@@ -1,0 +1,35 @@
+#
+# -*- C utf8 -*-
+#
+# Author:
+#	 Thalisson Sousa <thalisson.sousa@lsbd.ufc.br>
+#
+# For usage and distribution conditions contact Lenovo directly.
+#
+
+[Defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = FileSystemLib
+  FILE_GUID                      = 218DE504-7826-4014-9B93-E8EE7BF545B8
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = FileSystemLib
+
+
+[Sources]
+    FileSystemLib.c
+
+[Packages]
+    MdePkg/MdePkg.dec
+    ThalissonPkg/ThalissonPkg.dec
+
+[LibraryClasses]
+    UefiLib
+    DebugLib
+
+[Protocols]
+    gEfiSimpleFileSystemProtocolGuid
+
+[Guids]
+    gEfiFileInfoGuid
+    
