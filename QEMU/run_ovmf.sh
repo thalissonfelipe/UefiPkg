@@ -1,27 +1,64 @@
+
+
 #!/bin/bash
-#
-# Runs QEMU with the specified BIOS image
-#
 
-if [ $# -lt 1 ]; then
-  echo "You must inform the Ovmf image name to run, usage:"
-  echo "  $0 <Ovmf firmware name>"
-  exit 1
-fi
+# Initial values. These can be overwritten by user's command line args
+QEMU_EXEC='qemu-system-x86_64'
+QEMU_ARGS=""
+FIRMWARE="OVMF.fd"
+VFAT_DIR="harddisk"
+SERIAL_OUTPUT="serial_output.txt"
+USB_DEVICES=""
+MEMORY="1G"
+WINDOWS_IMAGES=""
 
-FIRMWARE="-drive file=$1,format=raw,if=pflash"
-VIRTUAL_HDD="-drive id=nvme0,file=fat:wr:harddisk,format=raw,if=none"
-VIRTUAL_HDD="$VIRTUAL_HDD -device nvme,drive=nvme0,serial=1234"
-MACHINE="-m 1G -machine q35"
-SERIAL_OUTPUT="-serial file:serial_output.txt"
-USB_VOLUME="-usbdevice host:0781:5571"
-#WIN_HDD="-drive file=win.raw,format=raw"
-
-if [[ -f serial_output.txt ]]; then
-    rm -f serial_output.txt
-fi
+# Get user's custom and additional options
+while getopts "f:u:m:s:w:d" opt; do
+    case $opt in
+        f)
+            FIRMWARE="$OPTARG"
+            ;;
+        u)
+            USB_DEVICES="$USB_DEVICES -usbdevice host:$OPTARG"
+            ;;
+        m)
+            MEMORY="$OPTARG"
+            ;;
+        s)
+            SERIAL_OUTPUT="$OPTARG"
+            ;;
+        w)
+            WINDOWS_IMAGES="-drive file=$OPTARG,format=raw"
+            ;;
+        d)
+            VFAT_DIR="$OPTARG"
+            ;;
+    esac
+done
 
 source cp_images.sh
 
-qemu-system-x86_64  $MACHINE $FIRMWARE $VIRTUAL_HDD  $SERIAL_OUTPUT \
-    $USB_VOLUME "${@:2}"
+# firmware image file
+QEMU_ARGS="$QEMU_ARGS -drive file=$FIRMWARE,format=raw,if=pflash"
+
+# virtual fat file system
+QEMU_ARGS="$QEMU_ARGS -drive id=nvme0,file=fat:wr:$VFAT_DIR,format=raw,if=none"
+QEMU_ARGS="$QEMU_ARGS -device nvme,drive=nvme0,serial=1234"
+
+# machine config
+QEMU_ARGS="$QEMU_ARGS -m $MEMORY -machine q35"
+
+# serial output file
+QEMU_ARGS="$QEMU_ARGS -serial file:$SERIAL_OUTPUT"
+
+# real usb devices passthrough
+QEMU_ARGS="$QEMU_ARGS $USB_DEVICES"
+
+# windows image files
+QEMU_ARGS="$QEMU_ARGS $WINDOWS_IMAGES"
+
+##
+## At last! let's run QEMU
+##
+$QEMU_EXEC $QEMU_ARGS
+
