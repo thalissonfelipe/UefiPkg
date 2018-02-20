@@ -1,39 +1,27 @@
+
 [Defines]
   INF_VERSION               = 0x00010006
   BASE_NAME                 = ListDirectory
   FILE_GUID                 = 2A9DE21E-8535-411A-B195-455D9BD0C7F8
   MODULE_TYPE               = UEFI_APPLICATION
-  VERSION_STRING            = 0.1
+  VERSION_STRING            = 1.0
   ENTRY_POINT               = UefiMain
-  
   
 [Sources]
   ListDirectory.c
   
-  
 [Packages]
   MdePkg/MdePkg.dec
-  ShellPkg/ShellPkg.dec
   ThalissonPkg/ThalissonPkg.dec
-  MdeModulePkg/MdeModulePkg.dec
   
-
 [LibraryClasses]
   UefiApplicationEntryPoint
-  UefiBootServicesTableLib
-  BaseLib
-  DebugLib
   UefiLib
   MemoryAllocationLib
-  BaseMemoryLib
-  
+  FileSystemLib
  
 [Protocols]
   gEfiSimpleFileSystemProtocolGuid
    
-   
 [Guids]
   gEfiFileInfoGuid
-  gEfiFileSystemInfoGuid
-  gEfiFileSystemVolumeLabelInfoIdGuid
-  
