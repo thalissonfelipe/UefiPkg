@@ -3,38 +3,28 @@
   BASE_NAME                 = LastModifiedFile
   FILE_GUID                 = 990A8B77-223D-4C72-B623-A4CEA7ED4487
   MODULE_TYPE               = UEFI_APPLICATION
-  VERSION_STRING            = 0.1
+  VERSION_STRING            = 1.0
   ENTRY_POINT               = UefiMain
-  
   
 [Sources]
   LastModifiedFile.c
   
-  
 [Packages]
   MdePkg/MdePkg.dec
-  ShellPkg/ShellPkg.dec
   ThalissonPkg/ThalissonPkg.dec
-  MdeModulePkg/MdeModulePkg.dec
-  
 
 [LibraryClasses]
   UefiApplicationEntryPoint
-  UefiBootServicesTableLib
-  BaseLib
-  DebugLib
   UefiLib
   MemoryAllocationLib
   BaseMemoryLib
-  
+  FileSystemLib
+  LibStdLib
+  LibC
  
 [Protocols]
   gEfiSimpleFileSystemProtocolGuid
    
-   
 [Guids]
   gEfiFileInfoGuid
-  gEfiFileSystemInfoGuid
-  gEfiFileSystemVolumeLabelInfoIdGuid
-  
-
+ 

@@ -1,58 +1,35 @@
-#include  <Uefi.h>
-#include  <Library/UefiLib.h>
-#include  <Library/UefiApplicationEntryPoint.h>
-#include  <Library/UefiBootServicesTableLib.h>
-#include  <Library/MemoryAllocationLib.h>
-#include  <Protocol/SimpleFileSystem.h>
-#include  <Guid/FileInfo.h>
-#include  <Library/BaseMemoryLib.h>
+#include <Uefi.h>
+#include <Library/UefiLib.h>
+#include <Library/UefiApplicationEntryPoint.h>
+#include <Library/MemoryAllocationLib.h>
+#include <Library/BaseMemoryLib.h>
+#include <Protocol/SimpleFileSystem.h>
+#include <Guid/FileInfo.h>
+#include <FileSystemLib/FileSystemLib.h>
+#include <time.h>
+#include <sys/time.h>
+
 
 EFI_FILE_INFO*
+EFIAPI
 CompareTwoTimes(
-	EFI_FILE_INFO *FileInfo1,
-	EFI_FILE_INFO *FileInfo2
+	EFI_FILE_INFO *FileInfo,
+	EFI_FILE_INFO *FileInfoAux
 )
 {
-	EFI_TIME Time1 = FileInfo1->ModificationTime;
-	EFI_TIME Time2 = FileInfo2->ModificationTime;
+	INT32 TimeFileInfo = Efi2Time(&FileInfo->ModificationTime);
+	INT32 TimeFileInfoAux = Efi2Time(&FileInfoAux->ModificationTime);
 
-	if (Time1.Year > Time2.Year)
-		return FileInfo1;
-	else if (Time1.Year < Time2.Year)
-		return FileInfo2;
+	if (TimeFileInfo >= TimeFileInfoAux) {
+		return FileInfo;
+	}
 	else {
-		if (Time1.Month > Time2.Month)
-			return FileInfo1;
-	   	else if (Time1.Month < Time2.Month)
-	   		return FileInfo2;
-	   	else {
-	   		if (Time1.Day > Time2.Day)
-	   			return FileInfo1;
-	   		else if (Time1.Day < Time2.Day)
-	   			return FileInfo2;
-	   		else {
-	   			if (Time1.Hour > Time2.Hour)
-	   				return FileInfo1;
-	   			else if (Time1.Hour < Time2.Hour)
-	   				return FileInfo2;
-	   			else {
-	   				if (Time1.Minute > Time2.Minute)
-	   					return FileInfo1;
-	   				else if (Time1.Minute < Time2.Minute)
-	   					return FileInfo2;
-	   				else {
-	   					if (Time1.Second > Time2.Second)
-	   						return FileInfo1;
-	   					else
-	   						return FileInfo2;
-	   				}
-	   			}
-	   		}
-	   	}
+		return FileInfoAux;
 	}
 }
 
 EFI_STATUS
+EFIAPI
 LSRecursive (
 	EFI_FILE_PROTOCOL *RootDir,
 	CHAR16 			  *Path,
@@ -63,7 +40,8 @@ LSRecursive (
 	EFI_STATUS Status;
 	EFI_FILE_PROTOCOL *File = NULL;
 	UINTN BufferSize = SIZE_OF_EFI_FILE_INFO + 512 * sizeof(CHAR16);
-	EFI_FILE_INFO *FileInfo = (EFI_FILE_INFO*)AllocateZeroPool(BufferSize);
+	EFI_FILE_INFO *FileInfo = AllocateZeroPool(BufferSize);
+
 	Status = RootDir->Open(
 			RootDir,
 			&File,
@@ -96,13 +74,15 @@ LSRecursive (
 		}
 	}
 
-	FreePool(FileInfo);
+	if (FileInfo != NULL) {
+		FreePool(FileInfo);
+	}
 
 close_file:
-	File->Close(File);
+	CloseFile(File);
 
 close_root:
-	RootDir->Close(RootDir);
+	CloseFile(RootDir);
 
 	return Status;
 }
@@ -115,46 +95,18 @@ UefiMain (
 )
 {
     EFI_STATUS Status = EFI_SUCCESS;
-    EFI_HANDLE NtfsHandle = NULL;
-    UINTN BufferSize = SIZE_OF_EFI_FILE_INFO + 512 * sizeof(CHAR16);
-    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem = NULL;
+    UINTN BufferSize;
     EFI_FILE_PROTOCOL *RootDir = NULL;
-    EFI_FILE_INFO *FileInfo = (EFI_FILE_INFO*)AllocateZeroPool(BufferSize);
+    EFI_FILE_INFO *FileInfo = NULL;
+    CHAR16 *FileName = NULL;
 
-    Status = gBS->LocateHandle(
-        ByProtocol,
-        &gEfiSimpleFileSystemProtocolGuid,
-        NULL,
-        &BufferSize,
-        &NtfsHandle);
-    if (Status == EFI_BUFFER_TOO_SMALL) {
-        Print(L"Required handle buffer of size: %d\n", BufferSize);
-    } else if (EFI_ERROR(Status)) {
-        Print(L"Could not find any NTFS volume: %r\n", Status);
-        goto bottom;
-    }
-
-    Status = gBS->OpenProtocol(
-        NtfsHandle,
-        &gEfiSimpleFileSystemProtocolGuid,
-        (VOID**) &FileSystem,
-        ImageHandle,
-        NULL,
-        EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+    Status = OpenRootDir(ImageHandle, &RootDir);
     if (EFI_ERROR(Status)) {
-        Print(L"Could not open system protocol: %r\n", Status);
-        goto bottom;
+    	return Status;
     }
 
-    Status = FileSystem->OpenVolume(
-        FileSystem,
-        &RootDir);
-    if (EFI_ERROR(Status)) {
-        Print(L"Could not open root dir: %r\n", Status);
-        goto close_fs;
-    }
-
-
+    BufferSize = SIZE_OF_EFI_FILE_INFO + 512 * sizeof(CHAR16);
+    FileInfo = AllocateZeroPool(BufferSize);
     FileInfo->ModificationTime.Year = 0;
     FileInfo->ModificationTime.Month = 0;
     FileInfo->ModificationTime.Day = 0;
@@ -162,25 +114,27 @@ UefiMain (
     FileInfo->ModificationTime.Minute = 0;
     FileInfo->ModificationTime.Second = 0;
 
-    CHAR16* FileName = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
+    FileName = AllocateZeroPool(512 * sizeof(CHAR16));
     FileName[0] = '\0';
     LSRecursive(RootDir, L".", FileInfo, FileName);
-    Print(L"Último arquivo modificado: %s\n", FileName);
-    Print(L"Data: %d/%d/%d \n", FileInfo->ModificationTime.Day, FileInfo->ModificationTime.Month, FileInfo->ModificationTime.Year);
-    Print(L"Hora: %d:%d:%d \n", FileInfo->ModificationTime.Hour, FileInfo->ModificationTime.Minute, FileInfo->ModificationTime.Second);
 
-    FreePool(FileInfo);
-    FreePool(FileName);
+    Print(L"Last modified file: %s\n", FileName);
+    Print(L"Date: %d/%d/%d \n", FileInfo->ModificationTime.Day,
+    							FileInfo->ModificationTime.Month, FileInfo->ModificationTime.Year);
+    Print(L"Time: %d:%d:%d \n", FileInfo->ModificationTime.Hour,
+    							FileInfo->ModificationTime.Minute, FileInfo->ModificationTime.Second);
 
 
-close_fs:
-    gBS->CloseProtocol(
-        NtfsHandle,
-        &gEfiSimpleFileSystemProtocolGuid,
-        ImageHandle,
-        NULL);
+    if (FileInfo != NULL) {
+    	FreePool(FileInfo);
+    }
 
-bottom:
+    if (FileName != NULL) {
+    	FreePool(FileName);
+    }
+
+    CloseProtocol();
+
     return Status;
 }
 
