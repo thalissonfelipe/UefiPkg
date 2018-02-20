@@ -9,7 +9,6 @@
 #include <time.h>
 #include <sys/time.h>
 
-
 EFI_FILE_INFO*
 EFIAPI
 CompareTwoTimes(
@@ -41,6 +40,7 @@ LSRecursive (
 	EFI_FILE_PROTOCOL *File = NULL;
 	UINTN BufferSize = SIZE_OF_EFI_FILE_INFO + 512 * sizeof(CHAR16);
 	EFI_FILE_INFO *FileInfo = AllocateZeroPool(BufferSize);
+	EFI_FILE_INFO *Result = NULL;
 
 	Status = RootDir->Open(
 			RootDir,
@@ -50,7 +50,7 @@ LSRecursive (
 			0);
 	if (EFI_ERROR(Status)) {
 		Print(L"Could not open file: %r\n", Status);
-		goto close_root;
+		goto FREE_RESOURCES;
 	}
 
 	while (TRUE) {
@@ -58,31 +58,34 @@ LSRecursive (
 		Status = File->Read(File, &BufferSize, FileInfo);
 		if (EFI_ERROR(Status)) {
 			Print(L"Could not read file: %r\n", Status);
-			goto close_file;
+			goto FREE_RESOURCES;
 		}
-		if (BufferSize == 0)
+
+		if (BufferSize == 0) {
 			return Status;
+		}
+
 		if (FileInfo->Attribute == EFI_FILE_DIRECTORY) {
 			if (StrCmp(FileInfo->FileName, L".") != 0 && StrCmp(FileInfo->FileName, L"..") != 0) {
 				LSRecursive(File, FileInfo->FileName, FileInfoAux, FileName);
 			}
 		}
 		else {
-			EFI_FILE_INFO *Result = CompareTwoTimes(FileInfo, FileInfoAux);
+			Result = CompareTwoTimes(FileInfo, FileInfoAux);
 			CopyMem(FileInfoAux, Result, SIZE_OF_EFI_FILE_INFO + (StrLen(Result->FileName) * 2) + 1);
 			StrCpy(FileName, FileInfoAux->FileName);
 		}
 	}
 
+FREE_RESOURCES:
+
 	if (FileInfo != NULL) {
 		FreePool(FileInfo);
 	}
 
-close_file:
-	CloseFile(File);
+	Status = CloseFileProtocol(File);
 
-close_root:
-	CloseFile(RootDir);
+	Status = CloseFileProtocol(RootDir);
 
 	return Status;
 }
@@ -102,6 +105,7 @@ UefiMain (
 
     Status = OpenRootDir(ImageHandle, &RootDir);
     if (EFI_ERROR(Status)) {
+    	Print(L"Could not open root dir: %r\n", Status);
     	return Status;
     }
 
@@ -124,7 +128,6 @@ UefiMain (
     Print(L"Time: %d:%d:%d \n", FileInfo->ModificationTime.Hour,
     							FileInfo->ModificationTime.Minute, FileInfo->ModificationTime.Second);
 
-
     if (FileInfo != NULL) {
     	FreePool(FileInfo);
     }
@@ -133,7 +136,9 @@ UefiMain (
     	FreePool(FileName);
     }
 
-    CloseProtocol();
+    Status = CloseFileProtocol(RootDir);
+
+    Status = CloseProtocol();
 
     return Status;
 }
