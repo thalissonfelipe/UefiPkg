@@ -1,5 +1,14 @@
-#include "HiiExample.h"
-#include "HiiExampleData.h"
+#include <Uefi.h>
+#include <Library/UefiLib.h>
+#include <Library/HiiLib.h>
+#include <Library/BaseMemoryLib.h>
+#include <Library/UefiBootServicesTableLib.h>
+#include <Protocol/FormBrowser2.h>
+#include <HiiExampleData.h>
+
+extern UINT8  HiiExampleStrings[];
+
+extern UINT8  HiiExampleVfrBin[];
 
 EFI_GUID mFormSetGuid = HII_EXAMPLE_GUID;
 

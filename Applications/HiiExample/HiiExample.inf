@@ -8,7 +8,6 @@
 
 [Sources]
   HiiExample.c
-  HiiExample.h
   HiiExampleData.h
   HiiExampleVfr.vfr
   HiiExampleStrings.uni
@@ -23,18 +22,9 @@
   BaseLib
   UefiLib
   UefiApplicationEntryPoint
-  PrintLib
   HiiLib
-  UefiHiiServicesLib
+
+[Protocols]
+  gEfiFormBrowser2ProtocolGuid                  ## PROTOCOL CONSUMES
 
 [Guids]
-  gEfiIfrTianoGuid                              ## CONSUMES ## GUID (Extended IFR Guid Opcode)
-  gEfiHiiPlatformSetupFormsetGuid               ## CONSUMES ## GUID (Indicate the formset class guid to be displayed)
-  gEfiHiiDriverHealthFormsetGuid                ## CONSUMES ## GUID (Indicate the Driver Health formset class guid to be displayed)
-  
-[Protocols]
-  gEfiGraphicsOutputProtocolGuid                ## PROTOCOL SOMETIMES_CONSUMES
-  gEfiHiiStringProtocolGuid                     ## PROTOCOL CONSUMES
-  gEfiFormBrowser2ProtocolGuid                  ## PROTOCOL CONSUMES
-  gEfiHiiDatabaseProtocolGuid                   ## CONSUMES
-
