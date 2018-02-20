@@ -1,24 +1,26 @@
-#include  <Uefi.h>
-#include  <Library/UefiLib.h>
-#include  <Library/UefiApplicationEntryPoint.h>
-#include  <Library/UefiBootServicesTableLib.h>
-#include  <Library/MemoryAllocationLib.h>
-#include  <Protocol/SimpleFileSystem.h>
-#include  <Guid/FileInfo.h>
+#include <Uefi.h>
+#include <Library/UefiLib.h>
+#include <Library/UefiApplicationEntryPoint.h>
+#include <Library/UefiBootServicesTableLib.h>
+#include <Library/MemoryAllocationLib.h>
+#include <Protocol/SimpleFileSystem.h>
+#include <Guid/FileInfo.h>
+#include <FileSystemLib/FileSystemLib.h>
+#include <MiniShellLib/MiniShellLib.h>
 
 EFI_STATUS
 LSRecursive(
 	EFI_FILE_PROTOCOL *RootDir,
 	CHAR16			  *Path,
 	CHAR16			  *Arquivo,
-	UINTN 			  *Check
+	BOOLEAN 		  *CheckFile
 )
 {
 	EFI_STATUS Status;
 	EFI_FILE_PROTOCOL *File = NULL;
 	EFI_FILE_INFO *FileInfo = NULL;
 	UINTN BufferSize = SIZE_OF_EFI_FILE_INFO + 512 * sizeof(CHAR16);
-	FileInfo = (EFI_FILE_INFO*)AllocateZeroPool(BufferSize);
+	FileInfo = AllocateZeroPool(BufferSize);
 
 	Status = RootDir->Open(
 			RootDir,
@@ -27,8 +29,8 @@ LSRecursive(
 			EFI_FILE_MODE_READ,
 			0);
 	if (EFI_ERROR(Status)) {
-		Print(L"Could not open dir: %r\n", Status);
-		goto close_root;
+		Print(L"Could not open file/dir: %r\n", Status);
+		goto FREE_RESOURCES;
 	}
 
 	while (TRUE) {
@@ -36,29 +38,33 @@ LSRecursive(
 		Status = File->Read(File, &BufferSize, FileInfo);
 		if (EFI_ERROR(Status)) {
 			Print(L"Could not read file: %r\n", Status);
-			goto close_file;
+			goto FREE_RESOURCES;
 		}
 		if (BufferSize == 0) {
 			return Status;
 		}
 		if (StrCmp(Arquivo, FileInfo->FileName) == 0) {
-			*Check = 1;
+			*CheckFile = TRUE;
 		}
 		if (FileInfo->Attribute == EFI_FILE_DIRECTORY) {
 			if (StrCmp(FileInfo->FileName, L".") != 0 && StrCmp(FileInfo->FileName, L"..") != 0) {
-				if (*Check == 1) return Status;
-				LSRecursive(File, FileInfo->FileName, Arquivo, Check);
+				if (*CheckFile == TRUE) {
+					return Status;
+				}
+				LSRecursive(File, FileInfo->FileName, Arquivo, CheckFile);
 			}
 		}
 	}
 
-	FreePool(FileInfo);
+FREE_RESOURCES:
 
-close_file:
-	File->Close(File);
+	if (FileInfo != NULL){
+		FreePool(FileInfo);
+	}
 
-close_root:
-	RootDir->Close(RootDir);
+	Status = CloseFileProtocol(File);
+
+	Status = CloseFileProtocol(RootDir);
 
 	return Status;
 }
@@ -73,11 +79,13 @@ UefiMain (
     EFI_STATUS Status = EFI_SUCCESS;
     EFI_HANDLE *NtfsHandle = NULL;
     UINTN NoHandles;
-    UINTN i;
-    UINTN *Check;
+    UINTN Index;
+    UINTN Argc;
+    CHAR16 **Argv = NULL;
+    CHAR16 *FileName = NULL;
+    BOOLEAN CheckFile = FALSE;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem = NULL;
     EFI_FILE_PROTOCOL *RootDir = NULL;
-    CHAR16 *Arquivo = L"Felipe.txt";
 
     Status = gBS->LocateHandleBuffer(
         ByProtocol,
@@ -87,15 +95,25 @@ UefiMain (
         &NtfsHandle);
     if (EFI_ERROR(Status)) {
         Print(L"Could not find any handles: %r\n", Status);
-        goto bottom;
+        goto FREE_RESOURCES;
     }
 
-    Print(L"%d handle(s) encontrado(s)\n", NoHandles);
-    Print(L"Procurando por %s\n", Arquivo);
+    GetShellInput(&Argc, &Argv);
 
-    for (i = 0; i < NoHandles; i++) {
+    if (Argc == 1 || Argc > 2) {
+    	FileName = L"Hello.txt";
+    }
+    else if (Argc == 2) {
+    	FileName = AllocateZeroPool(StrSize(Argv[1]) * sizeof(CHAR16));
+    	StrCpy(FileName, Argv[1]);
+    }
+
+    Print(L"%d handle(s) found.\n", NoHandles);
+    Print(L"Looking for: %s\n", FileName);
+
+    for (Index = 0; Index < NoHandles; Index++) {
 		Status = gBS->OpenProtocol(
-			NtfsHandle[i],
+			NtfsHandle[Index],
 			&gEfiSimpleFileSystemProtocolGuid,
 			(VOID**) &FileSystem,
 			ImageHandle,
@@ -103,7 +121,7 @@ UefiMain (
 			EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 		if (EFI_ERROR(Status)) {
 			Print(L"Could not open system protocol: %r\n", Status);
-			goto bottom;
+			goto FREE_RESOURCES;
 		}
 
 		Status = FileSystem->OpenVolume(
@@ -111,29 +129,32 @@ UefiMain (
 			&RootDir);
 		if (EFI_ERROR(Status)) {
 			Print(L"Could not open root dir: %r\n", Status);
-			goto close_fs;
+			goto FREE_RESOURCES;
 		}
 
-		LSRecursive(RootDir, L".", Arquivo, Check);
-
-		if (*Check == 1) {
-			Print(L"O arquivo existe.\n");
-			break;
-		}
+		LSRecursive(RootDir, L".", FileName, &CheckFile);
     }
 
-    if (*Check != 1)
-    	Print(L"O arquivo não existe.\n");
+    if (CheckFile) {
+    	Print(L"The file exists.\n");
+    }
+    else {
+    	Print(L"File not found.\n");
+    }
 
+FREE_RESOURCES:
 
+	if (FileName != NULL && Argc == 2) {
+		FreePool(FileName);
+	}
 
-close_fs:
-    gBS->CloseProtocol(
+	Status = CloseFileProtocol(RootDir);
+
+    Status = gBS->CloseProtocol(
         NtfsHandle,
         &gEfiSimpleFileSystemProtocolGuid,
         ImageHandle,
         NULL);
 
-bottom:
     return Status;
 }
