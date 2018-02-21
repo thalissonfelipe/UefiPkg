@@ -1,28 +1,31 @@
-#include  <Uefi.h>
-#include  <Library/UefiLib.h>
-#include  <Library/UefiApplicationEntryPoint.h>
-#include  <Library/UefiBootServicesTableLib.h>
-#include  <Library/MemoryAllocationLib.h>
-#include  <Protocol/SimpleFileSystem.h>
-#include  <Protocol/LoadedImage.h>
-#include  <Library/DevicePathLib.h>
-#include  <Guid/FileInfo.h>
+#include <Uefi.h>
+#include <Library/UefiLib.h>
+#include <Library/UefiApplicationEntryPoint.h>
+#include <Library/UefiBootServicesTableLib.h>
+#include <Library/MemoryAllocationLib.h>
+#include <Protocol/SimpleFileSystem.h>
+#include <Protocol/LoadedImage.h>
+#include <Library/DevicePathLib.h>
+#include <Guid/FileInfo.h>
+#include <FileSystemLib/FileSystemLib.h>
 
 EFI_STATUS
+EFIAPI
 LSRecursive(
 	EFI_FILE_PROTOCOL *RootDir,
 	CHAR16			  *Buffer,
-	CHAR16			  *FileName,
-	CHAR16  		  *Path,
-	EFI_STATUS 		   Flag
+	CHAR16			  *ImageName,
+	CHAR16  		  *ImagePath,
+	BOOLEAN 		  *Flag
 )
 {
-	EFI_STATUS Status;
+	EFI_STATUS Status = EFI_SUCCESS;
 	EFI_FILE_PROTOCOL *File = NULL;
 	EFI_FILE_INFO *FileInfo = NULL;
 	UINTN BufferSize = SIZE_OF_EFI_FILE_INFO + 512 * sizeof(CHAR16);
-	FileInfo = (EFI_FILE_INFO*)AllocateZeroPool(BufferSize);
-	CHAR16 *Dir = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
+	FileInfo = AllocateZeroPool(BufferSize);
+	CHAR16 *Dir = AllocateZeroPool(512 * sizeof(CHAR16));
+	Dir[0] = '\0';
 
 	Status = RootDir->Open(
 			RootDir,
@@ -32,7 +35,7 @@ LSRecursive(
 			0);
 	if (EFI_ERROR(Status)) {
 		Print(L"Could not open dir: %r\n", Status);
-		goto close_root;
+		goto FREE_RESOURCES;
 	}
 
 	while (TRUE) {
@@ -40,81 +43,95 @@ LSRecursive(
 		Status = File->Read(File, &BufferSize, FileInfo);
 		if (EFI_ERROR(Status)) {
 			Print(L"Could not read file: %r\n", Status);
-			goto close_file;
+			goto FREE_RESOURCES;
 		}
 		if (BufferSize == 0) {
-			StrCpy(Path, L"");
+			StrCpy(ImagePath, L"");
 			return Status;
 		}
 		if (FileInfo->Attribute == EFI_FILE_DIRECTORY) {
 			if (StrCmp(FileInfo->FileName, L".") != 0 && StrCmp(FileInfo->FileName, L"..") != 0) {
-				StrCpy(Dir, Path);
-				StrCat(Path, FileInfo->FileName);
-				StrCat(Path, L"\\");
-				LSRecursive(File, FileInfo->FileName, FileName, Path, Flag);
-				if (Flag == EFI_SUCCESS) return Status;
-				StrCpy(Path, Dir);
+				StrCpy(Dir, ImagePath);
+				StrCat(ImagePath, FileInfo->FileName);
+				StrCat(ImagePath, L"\\");
+				LSRecursive(File, FileInfo->FileName, ImageName, ImagePath, Flag);
+				if (*Flag) {
+					return Status;
+				}
+				StrCpy(ImagePath, Dir);
 			}
 		}
-		if (StrCmp(FileInfo->FileName, FileName) == 0) {
-			StrCat(Path, FileInfo->FileName);
-			Flag = EFI_SUCCESS;
+		if (StrCmp(FileInfo->FileName, ImageName) == 0) {
+			StrCat(ImagePath, FileInfo->FileName);
+			*Flag = TRUE;
 			break;
 		}
 	}
 
-	FreePool(FileInfo);
-	FreePool(Dir);
+FREE_RESOURCES:
 
-close_file:
-	File->Close(File);
+	if (FileInfo != NULL) {
+		FreePool(FileInfo);
+	}
 
-close_root:
-	RootDir->Close(RootDir);
+	if (Dir != NULL) {
+		FreePool(Dir);
+	}
+
+	Status = CloseFileProtocol(File);
+
+	Status = CloseFileProtocol(RootDir);
 
 	return Status;
 }
 
 EFI_STATUS
+EFIAPI
 ReadInput (
-	CHAR16	*FileName
+	IN OUT CHAR16 *ImageName
 )
 {
 	EFI_STATUS Status;
 	UINTN EventIndex;
-	UINTN i = 0;
+	UINTN Index = 0;
 	EFI_INPUT_KEY Key;
-	CHAR16 *Buffer = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
+	CHAR16 *Buffer = AllocateZeroPool(512 * sizeof(CHAR16));
 
-	Print(L"Aperte a tecla ENTER para finalizar a entrada.\n");
+	Print(L"Press the ENTER key to end the entry.\n");
 
 	while (Key.UnicodeChar != SCAN_F3) {
 		Status = gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &EventIndex);
 		if (EFI_ERROR(Status)) {
 			Print(L"Error: %r\n", Status);
-			return Status;
+			goto bottom;
 		}
 
 		Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &Key);
 		if (EFI_ERROR(Status)) {
 			Print(L"Error: %r\n", Status);
-			return Status;
+			goto bottom;
 		}
 
 		if (Key.UnicodeChar == CHAR_BACKSPACE) {
+			if (Index == 0) continue;
 			Print(L"%c", Key.UnicodeChar);
-			i--;
+			Index--;
 			continue;
 		}
 
-		Buffer[i] = Key.UnicodeChar;
+		Buffer[Index] = Key.UnicodeChar;
 		Print(L"%c", Key.UnicodeChar);
-		i++;
+		Index++;
 	}
 
-	Buffer[i-1] = '\0';
-	StrCpy(FileName, Buffer);
-	FreePool(Buffer);
+	Buffer[Index-1] = '\0';
+	StrCpy(ImageName, Buffer);
+
+bottom:
+
+	if (Buffer != NULL) {
+		FreePool(Buffer);
+	}
 
 	return Status;
 }
@@ -122,96 +139,117 @@ ReadInput (
 EFI_STATUS
 EFIAPI
 UefiMain(
-	IN EFI_HANDLE			ImageHandle,
-	IN EFI_SYSTEM_TABLE		*SystemTable
+	IN EFI_HANDLE		ImageHandle,
+	IN EFI_SYSTEM_TABLE *SystemTable
 )
 {
 	EFI_STATUS Status;
-	EFI_HANDLE Handle = NULL;
+	BOOLEAN Flag = FALSE;
+	EFI_HANDLE Handle;
 	EFI_HANDLE ImageApplication = NULL;
+	EFI_DEVICE_PATH_PROTOCOL *DevicePath = NULL;
+	CHAR16 *ImageName = NULL;
+	CHAR16 *ImagePath = NULL;
 	EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem = NULL;
 	EFI_FILE_PROTOCOL *RootDir = NULL;
-	EFI_DEVICE_PATH_PROTOCOL *DevicePath = NULL;
-	CHAR16 *FileName = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
-	CHAR16 *FilePath = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
-	FilePath[0] = '\0';
-	FileName[0] = '\0';
-	UINTN BufferSize = sizeof(EFI_HANDLE);
+	UINTN BufferSize = 0;
 
 	Status = gBS->LocateHandle(
+		ByProtocol,
+		&gEfiSimpleFileSystemProtocolGuid,
+		NULL,
+		&BufferSize,
+		&Handle);
+	if (Status == EFI_BUFFER_TOO_SMALL) {
+		Status = gBS->LocateHandle(
 			ByProtocol,
 			&gEfiSimpleFileSystemProtocolGuid,
 			NULL,
 			&BufferSize,
 			&Handle);
-	if (EFI_ERROR(Status)) {
-		Print(L"Could not find handles: %r\n", Status);
+		if (EFI_ERROR(Status)) {
+			Print(L"Could not locate handle: %r\n", Status);
+			return Status;
+		}
+	}
+	else if (EFI_ERROR(Status)) {
+		Print(L"Could not locate handle: %r\n", Status);
 		return Status;
 	}
-	Print(L"Handle encontrado.\n");
 
 	Status = gBS->OpenProtocol(
-			Handle,
-			&gEfiSimpleFileSystemProtocolGuid,
-			(VOID**) &FileSystem,
-			ImageHandle,
-			NULL,
-			EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+		Handle,
+		&gEfiSimpleFileSystemProtocolGuid,
+		(VOID**)&FileSystem,
+		ImageHandle,
+		NULL,
+		EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 	if (EFI_ERROR(Status)) {
 		Print(L"Could not open protocol: %r\n", Status);
 		return Status;
 	}
 
-	Status = FileSystem->OpenVolume(
-			FileSystem,
-			&RootDir);
+	Status = FileSystem->OpenVolume(FileSystem, &RootDir);
 	if (EFI_ERROR(Status)) {
-		Print(L"Could not open volume: %r\n", Status);
-		goto close_fs;
+		Print(L"Could not open root dir: %r\n", Status);
+		goto bottom;
 	}
 
-	ReadInput(FileName);
-	Print(L"Carregar imagem: %s\n", FileName);
+	ImageName = AllocateZeroPool(512 * sizeof(CHAR16));
+	ImageName[0] = '\0';
+	ReadInput(ImageName);
+	Print(L"Load image: %s\n", ImageName);
 
-	EFI_STATUS Flag;
-	LSRecursive(RootDir, L".", FileName, FilePath, Flag);
-	if (StrCmp(FilePath, L"") == 0) {
-		Print(L"Arquivo não encontrado.\n");
-		goto close_fs;
-	}
-	Print(L"Path: %s\n", FilePath);
+	ImagePath = AllocateZeroPool(512 * sizeof(CHAR16));
+	ImagePath[0] = '\0';
+	LSRecursive(RootDir, L".", ImageName, ImagePath, &Flag);
+	Print(L"Image path: %s\n", ImagePath);
 
-	DevicePath = FileDevicePath(Handle, FilePath);
+	DevicePath = FileDevicePath(Handle, ImagePath);
 
 	Status = gBS->LoadImage(
 			FALSE,
 			ImageHandle,
 			DevicePath,
-			(VOID*) NULL,
+			(VOID*)NULL,
 			0,
 			&ImageApplication);
 	if (EFI_ERROR(Status)) {
 		Print(L"Could not load image: %r\n", Status);
-		goto close_fs;
+		goto FREE_RESOURCES;
 	}
-	Print(L"Imagem carregada.\n");
+	Print(L"Image loaded.\n");
 
-	Print(L"Startando a imagem...\n");
-	Status = gBS->StartImage(ImageApplication, (UINTN*) NULL, (CHAR16**) NULL);
+	Status = gBS->StartImage(ImageApplication, NULL, NULL);
 	if (EFI_ERROR(Status)) {
 		Print(L"Could not start image: %r\n", Status);
-		goto close_fs;
+		goto FREE_RESOURCES;
+	}
+	Print(L"Image started.\n");
+
+
+FREE_RESOURCES:
+
+	if (ImageName != NULL) {
+		FreePool(ImageName);
 	}
 
-	FreePool(FileName);
-	FreePool(FilePath);
+	if (ImagePath != NULL) {
+		FreePool(ImagePath);
+	}
 
+	if (DevicePath != NULL) {
+		FreePool(DevicePath);
+	}
 
-close_fs:
-	gBS->CloseProtocol(
+	Status = CloseFileProtocol(RootDir);
+
+bottom:
+
+	Status = gBS->CloseProtocol(
 			Handle,
 			&gEfiSimpleFileSystemProtocolGuid,
-			ImageHandle,
+			Handle,
 			NULL);
 
 	return Status;

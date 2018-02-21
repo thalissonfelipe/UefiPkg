@@ -3,39 +3,27 @@
   BASE_NAME                 = LoadImage
   FILE_GUID                 = C22EB2FF-4BA0-4EC6-988E-125ACCD99D90
   MODULE_TYPE               = UEFI_APPLICATION
-  VERSION_STRING            = 0.1
+  VERSION_STRING            = 1.0
   ENTRY_POINT               = UefiMain
-  
   
 [Sources]
   LoadImage.c
   
-  
 [Packages]
   MdePkg/MdePkg.dec
-  ShellPkg/ShellPkg.dec
   ThalissonPkg/ThalissonPkg.dec
-  MdeModulePkg/MdeModulePkg.dec
   
-
 [LibraryClasses]
   UefiApplicationEntryPoint
   UefiBootServicesTableLib
   BaseLib
-  DebugLib
   UefiLib
-  MemoryAllocationLib
   BaseMemoryLib
-  
+  FileSystemLib
  
 [Protocols]
   gEfiSimpleFileSystemProtocolGuid
   gEfiLoadedImageProtocolGuid
    
-   
 [Guids]
   gEfiFileInfoGuid
-  gEfiFileSystemInfoGuid
-  gEfiFileSystemVolumeLabelInfoIdGuid
-  
-
