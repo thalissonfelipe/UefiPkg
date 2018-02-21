@@ -6,35 +6,23 @@
   VERSION_STRING            = 0.1
   ENTRY_POINT               = UefiMain
   
-  
 [Sources]
   LSRecursive.c
   
-  
 [Packages]
   MdePkg/MdePkg.dec
-  ShellPkg/ShellPkg.dec
   ThalissonPkg/ThalissonPkg.dec
-  MdeModulePkg/MdeModulePkg.dec
-  
 
 [LibraryClasses]
   UefiApplicationEntryPoint
-  UefiBootServicesTableLib
-  BaseLib
-  DebugLib
   UefiLib
   MemoryAllocationLib
   BaseMemoryLib
-  
+  FileSystemLib
  
 [Protocols]
   gEfiSimpleFileSystemProtocolGuid
    
-   
 [Guids]
   gEfiFileInfoGuid
-  gEfiFileSystemInfoGuid
-  gEfiFileSystemVolumeLabelInfoIdGuid
   
-

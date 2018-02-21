@@ -1,10 +1,10 @@
-#include  <Uefi.h>
-#include  <Library/UefiLib.h>
-#include  <Library/UefiApplicationEntryPoint.h>
-#include  <Library/UefiBootServicesTableLib.h>
-#include  <Library/MemoryAllocationLib.h>
-#include  <Protocol/SimpleFileSystem.h>
-#include  <Guid/FileInfo.h>
+#include <Uefi.h>
+#include <Library/UefiLib.h>
+#include <Library/UefiApplicationEntryPoint.h>
+#include <Library/MemoryAllocationLib.h>
+#include <Protocol/SimpleFileSystem.h>
+#include <FileSystemLib/FileSystemLib.h>
+#include <Guid/FileInfo.h>
 
 EFI_STATUS
 LSRecursive(
@@ -17,8 +17,9 @@ LSRecursive(
 	EFI_FILE_PROTOCOL *File = NULL;
 	EFI_FILE_INFO *FileInfo = NULL;
 	UINTN BufferSize = SIZE_OF_EFI_FILE_INFO + 512 * sizeof(CHAR16);
-	FileInfo = (EFI_FILE_INFO*)AllocateZeroPool(BufferSize);
-	CHAR16 *Dir = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
+	FileInfo = AllocateZeroPool(BufferSize);
+	CHAR16 *Dir = AllocateZeroPool(512 * sizeof(CHAR16));
+	Dir[0] = '\0';
 
 	Status = RootDir->Open(
 			RootDir,
@@ -28,7 +29,7 @@ LSRecursive(
 			0);
 	if (EFI_ERROR(Status)) {
 		Print(L"Could not open dir: %r\n", Status);
-		goto close_root;
+		goto FREE_RESOURCES;
 	}
 
 	while (TRUE) {
@@ -36,7 +37,7 @@ LSRecursive(
 		Status = File->Read(File, &BufferSize, FileInfo);
 		if (EFI_ERROR(Status)) {
 			Print(L"Could not read file: %r\n", Status);
-			goto close_file;
+			goto FREE_RESOURCES;
 		}
 		if (BufferSize == 0) {
 			StrCpy(Path, L"");
@@ -58,16 +59,20 @@ LSRecursive(
 
 	}
 
-	FreePool(FileInfo);
-	FreePool(Dir);
+FREE_RESOURCES:
 
-close_file:
-	File->Close(File);
+	if (FileInfo != NULL) {
+		FreePool(FileInfo);
+	}
 
-close_root:
-	RootDir->Close(RootDir);
+	if (Dir != NULL) {
+		FreePool(Dir);
+	}
 
-	Print(L"Status: %r\n", Status);
+	CloseFileProtocol(File);
+
+	CloseFileProtocol(RootDir);
+
 	return Status;
 }
 
@@ -79,57 +84,24 @@ UefiMain (
 )
 {
     EFI_STATUS Status = EFI_SUCCESS;
-    EFI_HANDLE NtfsHandle = NULL;
-    UINTN BufferSize = SIZE_OF_EFI_FILE_INFO + 512 * sizeof(CHAR16);
-    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem = NULL;
     EFI_FILE_PROTOCOL *RootDir = NULL;
+    CHAR16 *Path = NULL;
 
-    Status = gBS->LocateHandle(
-        ByProtocol,
-        &gEfiSimpleFileSystemProtocolGuid,
-        NULL,
-        &BufferSize,
-        &NtfsHandle);
-    if (Status == EFI_BUFFER_TOO_SMALL) {
-        Print(L"Required handle buffer of size: %d\n", BufferSize);
-    } else if (EFI_ERROR(Status)) {
-        Print(L"Could not find any NTFS/FAT volume: %r\n", Status);
-        goto bottom;
-    }
-    Print(L"Found a NTFS/FAT file system\n");
-
-    Status = gBS->OpenProtocol(
-        NtfsHandle,
-        &gEfiSimpleFileSystemProtocolGuid,
-        (VOID**) &FileSystem,
-        ImageHandle,
-        NULL,
-        EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+    Status = OpenRootDir(ImageHandle, &RootDir);
     if (EFI_ERROR(Status)) {
-        Print(L"Could not open NTFS/FAT system protocol: %r\n", Status);
-        goto bottom;
+    	return Status;
     }
 
-    Status = FileSystem->OpenVolume(
-        FileSystem,
-        &RootDir);
-    if (EFI_ERROR(Status)) {
-        Print(L"Could not open root dir: %r\n", Status);
-        goto close_fs;
-    }
-
-    CHAR16 *Path = (CHAR16*)AllocateZeroPool(512 * sizeof(CHAR16));
+    Path = AllocateZeroPool(512 * sizeof(CHAR16));
     LSRecursive(RootDir, L".", Path);
 
-    FreePool(Path);
+    if (Path != NULL) {
+    	FreePool(Path);
+    }
 
-close_fs:
-    gBS->CloseProtocol(
-        NtfsHandle,
-        &gEfiSimpleFileSystemProtocolGuid,
-        ImageHandle,
-        NULL);
+    Status = CloseFileProtocol(RootDir);
 
-bottom:
+    Status = CloseProtocol();
+
     return Status;
 }
