@@ -15,7 +15,6 @@
   VERSION_STRING                 = 1.0
   LIBRARY_CLASS                  = FileSystemLib
 
-
 [Sources]
     FileSystemLib.c
 
@@ -25,11 +24,9 @@
 
 [LibraryClasses]
     UefiLib
-    DebugLib
 
 [Protocols]
     gEfiSimpleFileSystemProtocolGuid
 
 [Guids]
-    gEfiFileInfoGuid
     

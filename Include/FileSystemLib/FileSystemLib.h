@@ -11,12 +11,12 @@ OpenRootDir (
 	OUT EFI_FILE_PROTOCOL **RootDir
 );
 
-VOID
+EFI_STATUS
 EFIAPI
-CloseFile (
-	IN EFI_FILE_PROTOCOL *File
+CloseFileProtocol (
+	IN EFI_FILE_PROTOCOL *FileProtocol
 );
 
-VOID EFIAPI CloseProtocol ();
+EFI_STATUS EFIAPI CloseProtocol ();
 
 #endif

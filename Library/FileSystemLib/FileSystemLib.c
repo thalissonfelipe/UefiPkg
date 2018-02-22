@@ -26,11 +26,17 @@ OpenRootDir (
 		&BufferSize,
 		&FsHandle);
 	if (Status == EFI_BUFFER_TOO_SMALL) {
-		Print(L"Required handle buffer of size: %d\n", BufferSize);
-		return Status;
+		Status = gBS->LocateHandle(
+			ByProtocol,
+			&gEfiSimpleFileSystemProtocolGuid,
+			NULL,
+			&BufferSize,
+			&FsHandle);
+		if (EFI_ERROR(Status)) {
+			return Status;
+		}
 	}
 	else if (EFI_ERROR(Status)) {
-		Print(L"Could not find any NTFS/FAT volume: %r\n", Status);
 		return Status;
 	}
 
@@ -42,39 +48,42 @@ OpenRootDir (
 		NULL,
 		EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 	if (EFI_ERROR(Status)) {
-		Print(L"Could not open NTFS/FAT system protocol: %r\n", Status);
 		return Status;
 	}
 
 	Status = FileSystem->OpenVolume(FileSystem, RootDir);
-	if (EFI_ERROR(Status)) {
-		Print(L"Could not open root dir: %r\n", Status);
-		return Status;
-	}
 
 	return Status;
 }
 
-VOID
+EFI_STATUS
 EFIAPI
 CloseProtocol ()
 {
-	if (AgentHandle != NULL && FsHandle != NULL) {
-		gBS->CloseProtocol(
+    EFI_STATUS Status = EFI_SUCCESS;
+
+	if (FsHandle != NULL) {
+		Status = gBS->CloseProtocol(
 				FsHandle,
 				&gEfiSimpleFileSystemProtocolGuid,
 				AgentHandle,
 				NULL);
 	}
+
+	return Status;
 }
 
-VOID
+EFI_STATUS
 EFIAPI
-CloseFile (
-	IN EFI_FILE_PROTOCOL *File
+CloseFileProtocol (
+	IN EFI_FILE_PROTOCOL *FileProtocol
 )
 {
-	if (File != NULL) {
-		File->Close(File);
+    EFI_STATUS Status = EFI_SUCCESS;
+
+	if (FileProtocol != NULL) {
+		Status = FileProtocol->Close(FileProtocol);
 	}
+
+	return Status;
 }
