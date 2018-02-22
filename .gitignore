@@ -2,3 +2,4 @@ QEMU/harddisk/
 QEMU/OVMF.fd
 QEMU/serial_output.txt
 QEMU/win.raw
+QEMU/
