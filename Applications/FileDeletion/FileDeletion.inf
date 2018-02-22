@@ -3,21 +3,16 @@
   BASE_NAME                 = FileDeletion
   FILE_GUID                 = 2FE4D9E5-CA64-434B-994F-74A41AC6F02A
   MODULE_TYPE               = UEFI_APPLICATION
-  VERSION_STRING            = 0.1
+  VERSION_STRING            = 1.0
   ENTRY_POINT               = UefiMain
-  
   
 [Sources]
   FileDeletion.c
   
-  
 [Packages]
   MdePkg/MdePkg.dec
-  ShellPkg/ShellPkg.dec
   ThalissonPkg/ThalissonPkg.dec
-  MdeModulePkg/MdeModulePkg.dec
   
-
 [LibraryClasses]
   UefiApplicationEntryPoint
   UefiBootServicesTableLib
@@ -26,15 +21,11 @@
   UefiLib
   MemoryAllocationLib
   BaseMemoryLib
+  FileSystemLib
   
- 
 [Protocols]
   gEfiSimpleFileSystemProtocolGuid
    
-   
 [Guids]
   gEfiFileInfoGuid
-  gEfiFileSystemInfoGuid
-  gEfiFileSystemVolumeLabelInfoIdGuid
-  
 
