@@ -76,6 +76,7 @@
   CacheMaintenanceLib|MdePkg/Library/BaseCacheMaintenanceLib/BaseCacheMaintenanceLib.inf
   FileSystemLib|ThalissonPkg/Library/FileSystemLib/FileSystemLib.inf
   MiniShellLib|ThalissonPkg/Library/MiniShellLib/MiniShellLib.inf
+  LibC|StdLib/LibC/LibC.inf
 
 [Components]
   ThalissonPkg/Applications/ListDirectory/ListDirectory.inf
@@ -89,3 +90,6 @@
   ThalissonPkg/Drivers/SimpleDriver/SimpleDriver.inf
   ThalissonPkg/Library/FileSystemLib/FileSystemLib.inf
   ThalissonPkg/Library/MiniShellLib/MiniShellLib.inf
+
+!include StdLib/StdLib.inc
+
