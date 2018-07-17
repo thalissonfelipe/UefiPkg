@@ -12,7 +12,7 @@
   
 [Packages]
   MdePkg/MdePkg.dec
-  ThalissonPkg/ThalissonPkg.dec
+  UefiPkg/UefiPkg.dec
   
 [LibraryClasses]
   UefiApplicationEntryPoint

@@ -1,9 +1,9 @@
 [Defines]
-  PLATFORM_NAME                 = ThalissonPkg
+  PLATFORM_NAME                 = UefiPkg
   PLATFORM_GUID                 = C405003B-F592-4C97-A60B-93C1D92069C5
   PLATFORM_VERSION              = 0.01
   DSC_SPECIFICATION             = 0x00010006
-  OUTPUT_DIRECTORY              = Build/ThalissonPkg
+  OUTPUT_DIRECTORY              = Build/UefiPkg
   SUPPORTED_ARCHITECTURES       = IA32|X64|ARM|AARCH64
   BUILD_TARGETS                 = DEBUG|RELEASE|NOOPT
   SKUILD_IDENTIFIER             = DEFAULT
@@ -74,22 +74,22 @@
   SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
   ShellLib|ShellPkg/Library/UefiShellLib/UefiShellLib.inf
   CacheMaintenanceLib|MdePkg/Library/BaseCacheMaintenanceLib/BaseCacheMaintenanceLib.inf
-  FileSystemLib|ThalissonPkg/Library/FileSystemLib/FileSystemLib.inf
-  MiniShellLib|ThalissonPkg/Library/MiniShellLib/MiniShellLib.inf
+  FileSystemLib|UefiPkg/Library/FileSystemLib/FileSystemLib.inf
+  MiniShellLib|UefiPkg/Library/MiniShellLib/MiniShellLib.inf
   LibC|StdLib/LibC/LibC.inf
 
 [Components]
-  ThalissonPkg/Applications/ListDirectory/ListDirectory.inf
-  ThalissonPkg/Applications/LSRecursive/LSRecursive.inf
-  ThalissonPkg/Applications/FileDeletion/FileDeletion.inf
-  ThalissonPkg/Applications/FileExistence/FileExistence.inf
-  ThalissonPkg/Applications/LoadImage/LoadImage.inf
-  ThalissonPkg/Applications/LastModifiedFile/LastModifiedFile.inf
-  ThalissonPkg/Applications/HiiExample/HiiExample.inf
-  ThalissonPkg/Applications/FindRecursive/FindRecursive.inf
-  ThalissonPkg/Drivers/SimpleDriver/SimpleDriver.inf
-  ThalissonPkg/Library/FileSystemLib/FileSystemLib.inf
-  ThalissonPkg/Library/MiniShellLib/MiniShellLib.inf
+  UefiPkg/Applications/ListDirectory/ListDirectory.inf
+  UefiPkg/Applications/LSRecursive/LSRecursive.inf
+  UefiPkg/Applications/FileDeletion/FileDeletion.inf
+  UefiPkg/Applications/FileExistence/FileExistence.inf
+  UefiPkg/Applications/LoadImage/LoadImage.inf
+  UefiPkg/Applications/LastModifiedFile/LastModifiedFile.inf
+  UefiPkg/Applications/HiiExample/HiiExample.inf
+  UefiPkg/Applications/FindRecursive/FindRecursive.inf
+  UefiPkg/Drivers/SimpleDriver/SimpleDriver.inf
+  UefiPkg/Library/FileSystemLib/FileSystemLib.inf
+  UefiPkg/Library/MiniShellLib/MiniShellLib.inf
 
 !include StdLib/StdLib.inc
 

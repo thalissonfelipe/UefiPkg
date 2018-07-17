@@ -1,6 +1,6 @@
 [Defines]
   DEC_SPECIFICATION             = 0x00010005
-  PACKAGE_NAME                  = ThalissonPkg
+  PACKAGE_NAME                  = UefiPkg
   PACKAGE_GUID                  = 4FAA0758-44A9-49AD-9069-6ED71CF37C64
   PACKAGE_VERSION               = 0.01
   

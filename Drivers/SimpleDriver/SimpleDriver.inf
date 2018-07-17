@@ -22,7 +22,7 @@
 [Packages]
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
-  ThalissonPkg/ThalissonPkg.dec
+  UefiPkg/UefiPkg.dec
 
 [LibraryClasses]
   UefiDriverEntryPoint
