@@ -71,10 +71,10 @@ LSRecursive(
 	}
 
 close_file:
-	CloseFile(File);
+	CloseFileProtocol(File);
 
 close_root:
-	CloseFile(RootDir);
+	CloseFileProtocol(RootDir);
 
 	return Status;
 }
